@@ -178,3 +178,53 @@ def _resample(wav_channels_first: np.ndarray, sr_in: int, sr_out: int) -> np.nda
             f"Input is {sr_in} Hz but model needs {sr_out} Hz and no resampler "
             "(torchaudio/librosa) is installed."
         ) from e
+
+
+def _save_stems(stems: dict[str, np.ndarray], out_dir: str, sample_rate: int) -> list[str]:
+    """Save each stem array to out_dir/<stem>.wav (channels-first -> file)."""
+    import os
+
+    try:
+        import soundfile as sf
+    except ImportError as e:
+        raise RuntimeError(
+            "soundfile is not installed. Run: ./venv/bin/pip install -r requirements.txt"
+        ) from e
+    os.makedirs(out_dir, exist_ok=True)
+    paths: list[str] = []
+    for stem in STEMS:
+        if stem not in stems:
+            continue
+        arr = stems[stem]
+        # soundfile wants (samples, channels).
+        data = arr.T if arr.ndim == 2 else arr
+        path = os.path.join(out_dir, f"{stem}.wav")
+        sf.write(path, data, sample_rate)
+        paths.append(path)
+    return paths
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Split audio into 4 stems with Demucs htdemucs")
+    parser.add_argument("audio", help="Input audio file (mp3/wav), e.g. samples/test.mp3")
+    parser.add_argument("-o", "--out-dir", default="outputs", help="Where to save stems")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help="Demucs model name")
+    parser.add_argument("--device", default=None, help="'cuda', 'cpu', or omit for auto")
+    args = parser.parse_args()
+
+    print(f"Separating {args.audio} with {args.model} (device={args.device or 'auto'}) ...")
+    try:
+        stems = separate(args.audio, model_name=args.model, device=args.device)
+    except (FileNotFoundError, RuntimeError) as e:
+        print(f"Error: {e}")
+        raise SystemExit(1)
+    paths = _save_stems(stems, args.out_dir, MODEL_SAMPLE_RATE)
+    for stem in STEMS:
+        arr = stems[stem]
+        secs = arr.shape[1] / MODEL_SAMPLE_RATE
+        print(f"  {stem}: shape={arr.shape} ({secs:.1f}s) -> {args.out_dir}/{stem}.wav")
+    print("Done. Listen to:")
+    for p in paths:
+        print(f"  {p}")
