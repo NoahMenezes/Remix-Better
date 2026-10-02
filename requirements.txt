@@ -1,0 +1,22 @@
+# Remix-Better requirements (Python 3.12, CUDA 12.1 build for torch)
+# Install with:
+#   ./venv/bin/pip install --upgrade pip
+#   ./venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cu121
+#   ./venv/bin/pip install -r requirements.txt
+# NOTE: torch is intentionally NOT pinned here to the cu121 index line above,
+# because PyPI default index serves CPU builds. Install torch first via the
+# cu121 index (see screenshot issue: ~2.5GB download, slow network — skipped for now),
+# then install the rest from PyPI.
+
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+numpy>=1.26,<3
+scipy>=1.11
+soundfile>=0.12
+librosa>=0.10.1
+pyrubberband>=0.3.0
+pydub>=0.25.1
+demucs>=4.0.1
+audiocraft>=1.3.0
+gradio>=4.19
+pytest>=8.0

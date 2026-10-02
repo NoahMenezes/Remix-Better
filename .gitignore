@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Audio artefacts (local only, not pushed)
+samples/*.mp3
+samples/*.wav
+samples/*.flac
+samples/*.ogg
+!samples/.gitkeep
+outputs/*.mp3
+outputs/*.wav
+outputs/*.flac
+outputs/*.ogg
+!outputs/.gitkeep
+
+# Hugging Face / torch caches
+.cache/
+*.pt
+*.bin
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
